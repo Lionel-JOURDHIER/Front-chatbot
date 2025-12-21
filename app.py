@@ -50,7 +50,7 @@ async def envoyer_message():
         ajouter_bulle(message, "I speak english", f'/static/assets/colere.png',est_utilisateur=False)
         saisie.value = ''
         # 3. On attend un tout petit peu que le message apparaisse
-        await asyncio.sleep(0.2) # Hack technique
+        await asyncio.sleep(0.05) # Hack technique
         area.scroll_to(percent=1.0)
 
 async def effet_machine_a_ecrire():
@@ -85,9 +85,9 @@ with ui.card().tight().classes('moka-card'):
         
 
     # Zone de Chat
-    with ui.scroll_area().classes('w-full p-16 h-[500px]') as area:
+    with ui.scroll_area().classes('w-full h-[500px] border-b') as area:
     # On met une colonne à l'intérieur pour l'espacement des bulles (gap-8)
-        chat_container = ui.column().classes('w-full p- gap-4')
+        chat_container = ui.column().classes('w-full max-w-[800px] mx-auto px-4 py-16 gap-4')
         label_bienvenue = ui.label('').classes('titre-main text-lg mb-4') \
             .style("font-family: 'Caveat', cursive; min-height: 3em;")
 

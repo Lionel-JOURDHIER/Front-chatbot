@@ -4,7 +4,8 @@ body {
 }
 
 .moka-card {
-    width: 900px;
+    width: 100%;
+    max-width: 900px;
     margin: 10px auto !important;
     border-radius: 16px;
     background-color: #faf7f1 !important; 
