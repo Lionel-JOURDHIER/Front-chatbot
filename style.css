@@ -1,0 +1,52 @@
+/* style.css */
+body {
+    background-color: #f2ece4 !important;
+}
+
+.moka-card {
+    width: 900px;
+    margin: 10px auto !important;
+    border-radius: 16px;
+    background-color: #faf7f1 !important; 
+
+    color: #321f19; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: none !important;
+}
+
+.bubble-user {
+    background-color: #6e594b;
+    color: #faf7f1;
+    padding: 16px;
+    border-radius: 16px 16px 0 16px;
+}
+
+.bubble-ai {
+    background-color: #F6F1EE;
+    color: #321f19;
+    padding: 16px;
+    border-radius: 16px 16px 16px 0;
+    border: 1px solid #e5e7eb;
+}
+
+.translation-label {
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: bold;
+    opacity: 0.7;
+}
+
+.translation-text {
+    font-style: italic;
+    font-size: 12px;
+}
+
+.sentiment {
+    width: 64px;
+    height: 64px;
+    background-color: #F6F1EE !important;
+    color: #321f19;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+}
