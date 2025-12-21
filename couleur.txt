@@ -1,0 +1,41 @@
+:root {
+  
+  --color-primary-hover: #8F6452;
+
+2025
+  --pantone Mocha mousse: #a47764;
+  --pantone cannoli cream: #f0f0e4;
+  --pantone cream tan: #e4c7b9;
+  --pantone sirocco: #c39f89;
+  --pantone Baltic Amber: #8b655a
+  --pantone chocolate martini: #56453e
+
+2026 bleu gris
+  --pantone Cloud Dancer: #f0efeb;
+  --pantone Ice Melt: #d4e4f1;
+  --pantone Baltic sea: #7ab6d8;
+  --pantone Blue Fusion: #496276;
+  --pantone Nimbus Cloud: #d5d5d7;
+  --pantone Cloud cover: #999393;
+  --pantone Hamatite: #746f69;
+
+  --pantone Lemon icing: #f5ebc8;
+  --pantone Raindorp on roses: #ebd8dc;
+  --pantone Peach Dust: #f0d8cc;
+  --pantone Almost Aqua: #cad3c0;
+  --pantone Orchid Tint: #dad3db;
+
+  --background : #f2ece4
+  --bg-chat : #faf7f1
+  --bubble utilisateur : #6e594b
+  --bubble IA : #fefdfd
+  - contour-input : #321f19
+
+
+
+  --color-text-main: #3B2A23;
+  --color-text-secondary: #6B5A52;
+
+  --color-border: #E6DED9;
+  --color-focus: #D9C4BA;
+}
