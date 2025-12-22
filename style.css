@@ -3,13 +3,42 @@ body {
     background-color: #f2ece4 !important;
 }
 
+header {
+    width: 100%;
+    background-color: #faf7f1 !important;
+    color: #321f19 !important; 
+    border: none !important;
+
+}
+
+.menu-link {
+    color: #6e594b !important; /* Ton brun chocolat */
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.menu-link:hover {
+    background-color: #E2D9D5 !important; /* Un brun/sable plus foncé que le fond #F6F1EE */
+    color: #524338 !important; /* Le texte devient aussi un peu plus sombre */
+}
+
+
+.bulle_info {
+            background-color: #6e594b !important;
+            color: #faf7f1 !important;
+            border: none !important;
+            border-radius: 8px; /* Un petit arrondi pour le style */
+            padding: 8px;       /* Un peu d'espace interne */
+        }
+
 .moka-card {
     width: 100%;
     max-width: 900px;
     margin: 10px auto !important;
     border-radius: 16px;
     background-color: #faf7f1 !important; 
-
     color: #321f19; 
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     overflow: hidden;
@@ -44,8 +73,8 @@ body {
 }
 
 .sentiment {
-    width: 64px;
-    height: 64px;
+    width: 96px;
+    height: 96px;
     background-color: #F6F1EE !important;
     color: #321f19;
     border-radius: 50%;
