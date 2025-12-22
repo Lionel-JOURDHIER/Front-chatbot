@@ -14,25 +14,26 @@ settings = {
     'translation': True # État initial du switch Traduction
 }     
 
-def ajouter_bulle(texte, traduction, sentiment, est_utilisateur=True):
+async def ajouter_bulle(texte, traduction, sentiment, est_utilisateur=True):
     with chat_container:
         align = 'justify-end' if est_utilisateur else 'justify-start'
         # On utilise nos classes CSS au lieu de Tailwind
         bubble_class = 'bubble-user' if est_utilisateur else 'bubble-ai'
-        spinner = ui.spinner('dots',size='l', color='brown-7')
-        asyncio.sleep(5)
-        chat_container.remove(spinner)
-        with ui.row().classes(f'w-full {align} items-end gap-3'):
-            
-    
-
+        
+        with ui.row().classes(f'w-full {align} items-end gap-1'):
             if not est_utilisateur and settings['sentiment']:
                 with ui.avatar().classes('sentiment').style('background-color: #F6F1EE !important'):
                     ui.image(sentiment).classes('w-full h-full object-cover')
             
             with ui.column().classes(bubble_class + ' max-w-md shadow-sm'):
-                ui.label(texte).classes('text-sm')
-                
+                label_message = ui.label('').classes('text-sm')
+                if est_utilisateur : 
+                    label_message.set_text(texte)
+                else : 
+                    label_message.text = "" # On s'assure qu'il est vide au départ
+                    for lettre in texte:
+                        label_message.text += lettre
+                        await asyncio.sleep(0.05) # Vitesse de frappe (50ms par lettre)
                 if settings['translation'] and traduction:
     # Pas de séparateur ici
                     # with ui.column().classes('w-full bg-black/5 p-2 rounded'): # Un léger voile sombre
@@ -44,22 +45,44 @@ def ajouter_bulle(texte, traduction, sentiment, est_utilisateur=True):
                 with ui.avatar().classes('sentiment').style('background-color: #6e594b !important'):
                     ui.image(sentiment).classes('w-full h-full object-cover')
         
+async def scroll_down():
+    await asyncio.sleep(0.05)
+    area.scroll_to(percent=1.0)
+    return True
 
 async def envoyer_message():
     label_bienvenue.set_visibility(False)
     message = saisie.value.strip()
     if message:
-        # 1. On ajoute la bulle
-        ajouter_bulle(message, "I speak english", f'/static/assets/adore.png',est_utilisateur=True)
-        # 2. On vide le champ immédiatement
-        ajouter_bulle(message, "I speak english", f'/static/assets/colere.png',est_utilisateur=False)
-        ajouter_bulle(message, "I speak english", f'/static/assets/heureux.png',est_utilisateur=False)
-        ajouter_bulle(message, "I speak english", f'/static/assets/neutre.png',est_utilisateur=True)
-        ajouter_bulle(message, "I speak english", f'/static/assets/pas_content.png',est_utilisateur=True)
+        # 1. On vide le champ immédiatement
         saisie.value = ''
-        # 3. On attend un tout petit peu que le message apparaisse
-        await asyncio.sleep(0.05) # Hack technique
-        area.scroll_to(percent=1.0)
+        # 2. On ajoute un spinner pour faire patienter
+        with chat_container:
+            with ui.row().classes(f'fit items-center gap-1 justify-end') as spinner_row:
+                with ui.card().classes('bubble-user'):
+                    ui.spinner('dots', size='xs', color="#faf7f1")
+            await scroll_down()
+        #! 3. On attend le retour de l'API
+            await asyncio.sleep(1)
+        # 4. On retire le spinner
+            chat_container.remove(spinner_row)
+        # 5. On ajoute la bulle    
+            await ajouter_bulle(message, "I speak english", f'/static/assets/adore.png',est_utilisateur=True)
+        # 6. On attend un tout petit peu que le message apparaisse pour scroller en bas
+        await scroll_down()
+        # 7. On affiche le spinner pour le chatbot
+        with chat_container:
+            with ui.row().classes(f'fit items-center gap-1 justify-start') as spinner_row:
+                with ui.card().classes('bubble-ai'):
+                    ui.spinner('dots', size='xs', color="#321f19")
+            await scroll_down()
+        #! 8. On attend le retour de l'API
+            await asyncio.sleep(1)
+        # 9. On retire le spinner_ai
+            chat_container.remove(spinner_row)
+        # 10. On ajoute la bulle ia  
+            await ajouter_bulle("Ja parle anglais", "I speak english", f'/static/assets/colere.png',est_utilisateur=False)
+            await scroll_down()
 
 async def effet_machine_a_ecrire():
     texte_complet = "Bienvenue dans votre application d'agent conversationnel : vous pouvez commencer en entrant un texte dans la zone blanche en bas."
@@ -67,7 +90,7 @@ async def effet_machine_a_ecrire():
     
     for lettre in texte_complet:
         label_bienvenue.text += lettre
-        await asyncio.sleep(0.02) # Vitesse de frappe (40ms par lettre)
+        await asyncio.sleep(0.02) # Vitesse de frappe (50ms par lettre)
 
 # --- Dans ton Layout ---
 # On place le label avec ta police "écriture main" définie plus tôt
@@ -111,7 +134,7 @@ with ui.card().tight().classes('moka-card'):
     # Zone de Chat
     with ui.scroll_area().classes('w-full h-[500px]') as area:
     # On met une colonne à l'intérieur pour l'espacement des bulles (gap-8)
-        chat_container = ui.column().classes('w-full max-w-[800px] mx-auto px-4 py-16 gap-4')
+        chat_container = ui.column().classes('w-full max-w-[800px] mx-auto px-4 py-4')
         label_bienvenue = ui.label('').classes('titre-main text-lg mb-4 mx-8') \
             .classes('text-xl tracking-widest text-brown-8')
 
