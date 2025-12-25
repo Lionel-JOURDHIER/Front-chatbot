@@ -51,12 +51,26 @@ header {
     padding: 16px;
     border-radius: 16px 16px 0 16px;
 }
+.bubble-user-trad {
+    background-color: #6e594b;
+    color: #faf7f1;
+    padding: 16px;
+    border-radius: 16px 16px 16px 16px;
+}
 
 .bubble-ai {
     background-color: #F6F1EE;
     color: #321f19;
     padding: 16px;
     border-radius: 16px 16px 16px 0;
+    border: 1px solid #e5e7eb;
+}
+
+.bubble-ai-trad {
+    background-color: #F6F1EE;
+    color: #321f19;
+    padding: 16px;
+    border-radius: 16px 16px 16px 16px;
     border: 1px solid #e5e7eb;
 }
 

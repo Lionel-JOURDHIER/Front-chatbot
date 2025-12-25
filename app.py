@@ -1,5 +1,6 @@
-from nicegui import app, ui
+from nicegui import app, ui, run
 import asyncio
+import requests
 
 # 1. On déclare le dossier contenant le CSS (ici le dossier courant '.')
 app.add_static_files('/static', '.')
@@ -14,45 +15,66 @@ settings = {
     'translation': True # État initial du switch Traduction
 }     
 
+SENTIMENT_CORRESP = {
+    "1 star": f'/static/assets/colere.png',
+    "2 stars": f'/static/assets/pas_content.png',
+    "3 stars": f'/static/assets/neutre.png',
+    "4 stars": f'/static/assets/heureux.png',
+    "5 stars": f'/static/assets/adore.png'
+}
+
 async def ajouter_bulle(texte, traduction, sentiment, est_utilisateur=True):
     with chat_container:
         align = 'justify-end' if est_utilisateur else 'justify-start'
         # On utilise nos classes CSS au lieu de Tailwind
         bubble_class = 'bubble-user' if est_utilisateur else 'bubble-ai'
+        bubble_class_trad = 'bubble-user-trad' if est_utilisateur else 'bubble-ai-trad'
         
-        with ui.row().classes(f'w-full {align} items-end gap-1'):
+        with ui.row().classes(f'w-full {align} items-end gap-2'):
             if not est_utilisateur and settings['sentiment']:
                 with ui.avatar().classes('sentiment').style('background-color: #F6F1EE !important'):
                     ui.image(sentiment).classes('w-full h-full object-cover')
             
-            with ui.column().classes(bubble_class + ' max-w-md shadow-sm'):
-                label_message = ui.label('').classes('text-sm')
-                if est_utilisateur : 
-                    label_message.set_text(texte)
-                else : 
-                    label_message.text = "" # On s'assure qu'il est vide au départ
-                    for lettre in texte:
-                        label_message.text += lettre
-                        await asyncio.sleep(0.05) # Vitesse de frappe (50ms par lettre)
+            with ui.column().classes(f'{align} items-end gap-1'):
+                with ui.row().classes(bubble_class + ' max-w-md shadow-sm gap-0'):
+                    label_message = ui.label('').classes('text-sm')
+                    if est_utilisateur : 
+                        label_message.set_text(texte)
+                    else : 
+                        label_message.text = "" # On s'assure qu'il est vide au départ
+                        for lettre in texte:
+                            label_message.text += lettre
+                            await asyncio.sleep(0.02) # Vitesse de frappe (20ms par lettre)
+                            await scroll_down()
                 if settings['translation'] and traduction:
-    # Pas de séparateur ici
-                    # with ui.column().classes('w-full bg-black/5 p-2 rounded'): # Un léger voile sombre
-                    with ui.row().classes('items-baseline mt-1 opacity-80'):
-                            ui.label('TRADUCTION :').classes('translation-label')
-                            ui.label(traduction).classes('translation-text')
+                    with ui.row().classes(bubble_class_trad + ' max-w-md shadow-sm gap-0'):
+                        with ui.row().classes('items-baseline mt-1 opacity-80'):
+                                ui.label('TRADUCTION :').classes('translation-label')
+                                ui.label(traduction).classes('translation-text')
 
             if est_utilisateur and settings['sentiment']:
                 with ui.avatar().classes('sentiment').style('background-color: #6e594b !important'):
                     ui.image(sentiment).classes('w-full h-full object-cover')
-        
+
+def send_get_request(url: str):
+    # Cette ligne "bloque" le thread où elle s'exécute
+    response = requests.get(url)
+    return response.json()
+
+def send_post_request(url, payload):
+    # On effectue le POST de manière synchrone
+    response = requests.post(url, json=payload)
+    return response.json()
+
 async def scroll_down():
-    await asyncio.sleep(0.05)
+    await asyncio.sleep(0.01)
     area.scroll_to(percent=1.0)
     return True
 
 async def envoyer_message():
     label_bienvenue.set_visibility(False)
     message = saisie.value.strip()
+    user_data = {"texte" : message}
     if message:
         # 1. On vide le champ immédiatement
         saisie.value = ''
@@ -62,12 +84,24 @@ async def envoyer_message():
                 with ui.card().classes('bubble-user'):
                     ui.spinner('dots', size='xs', color="#faf7f1")
             await scroll_down()
-        #! 3. On attend le retour de l'API
-            await asyncio.sleep(1)
+        # 3. On attend le retour de l'API
+            sentiment_json = await run.io_bound(
+            send_post_request, 
+            'http://127.0.0.1:8090/analyse/', 
+            user_data
+        )
+            
+            sentiment_image = SENTIMENT_CORRESP.get(sentiment_json["label"], "")
+
+            traduction_json = await run.io_bound(
+            send_post_request, 
+            'http://127.0.0.1:8090/translate_fr_en/', 
+            user_data
+        )
         # 4. On retire le spinner
             chat_container.remove(spinner_row)
         # 5. On ajoute la bulle    
-            await ajouter_bulle(message, "I speak english", f'/static/assets/adore.png',est_utilisateur=True)
+            await ajouter_bulle(message, traduction_json['translated_text'], sentiment_image ,est_utilisateur=True)
         # 6. On attend un tout petit peu que le message apparaisse pour scroller en bas
         await scroll_down()
         # 7. On affiche le spinner pour le chatbot
@@ -76,12 +110,16 @@ async def envoyer_message():
                 with ui.card().classes('bubble-ai'):
                     ui.spinner('dots', size='xs', color="#321f19")
             await scroll_down()
-        #! 8. On attend le retour de l'API
-            await asyncio.sleep(1)
+        # 8. On attend le retour de l'API
+            response_json = await run.io_bound(
+            send_post_request, 
+            'http://127.0.0.1:8090/chatbot/', 
+            user_data)
+            response_sentiment_image = SENTIMENT_CORRESP.get(response_json["label"], "")
         # 9. On retire le spinner_ai
             chat_container.remove(spinner_row)
         # 10. On ajoute la bulle ia  
-            await ajouter_bulle("Ja parle anglais", "I speak english", f'/static/assets/colere.png',est_utilisateur=False)
+            await ajouter_bulle(response_json['response'], response_json['translated_text'], response_sentiment_image, est_utilisateur=False)
             await scroll_down()
 
 async def effet_machine_a_ecrire():
@@ -122,7 +160,7 @@ with ui.header(elevated=True).classes('header'):
 with ui.left_drawer(value=False,fixed=True).style('background-color: #faf7f1') as drawer:
     with ui.column().classes('w-full q-pa-md gap-2'):
         ui.label('MENU').classes('text-xs text-brown-8 font-bold')
-        with ui.link('Accueil', '/').classes('menu-link'):
+        with ui.link('Nouvelle conversation', '/chatbot/').classes('menu-link'):
             ui.tooltip("Afficher la page chatbot").classes('bulle_info')
         with ui.link('Connexions', '/connections').classes('menu-link'):
             ui.tooltip('Afficher la page de connexion').classes('bulle_info')
